@@ -13,7 +13,7 @@ VENV := venv
 PY := $(VENV)/bin/python
 PIP := $(VENV)/bin/pip
 
-.PHONY: help venv env-info shell install sample run run-relaxed run-paper2slides test clean clean-venv deps-api run-api
+.PHONY: help venv env-info shell install sample run run-relaxed run-paper2slides test clean clean-venv deps-api run-api deps-pptx bootstrap-api start-api fe-install fe-dev fe-build
 
 help:
 	@echo "Targets:"
@@ -31,6 +31,11 @@ help:
 	@echo "  clean-venv      Remove local venv"
 	@echo "  deps-api        Install API dependencies (FastAPI, Uvicorn, requests, bs4)"
 	@echo "  run-api         Start FastAPI server with uvicorn (uses venv)"
+	@echo "  bootstrap-api   Install project + API deps (+pptx by default)"
+	@echo "  start-api       Bootstrap then run API (set NO_PPTX=1 to skip pptx dep)"
+	@echo "  fe-install      Install frontend dependencies (in ./frontend)"
+	@echo "  fe-dev          Start frontend dev server (Vite)"
+	@echo "  fe-build        Build frontend for production"
 
 venv:
 	@test -d $(VENV) || python3 -m venv $(VENV)
@@ -75,3 +80,20 @@ deps-api: install
 
 run-api: deps-api
 	@$(PY) -m uvicorn slideforge.api:app --reload --host 0.0.0.0 --port 8000
+
+# Convenience: install everything needed for the API in one go
+bootstrap-api: install deps-api
+	@if [ -z "$(NO_PPTX)" ]; then $(MAKE) deps-pptx; else echo "Skipping pptx dep (NO_PPTX=1)"; fi
+
+start-api:
+	@$(MAKE) bootstrap-api
+	@$(MAKE) run-api
+
+fe-install:
+	@cd frontend && npm install
+
+fe-dev:
+	@cd frontend && npm run dev
+
+fe-build:
+	@cd frontend && npm run build

@@ -1,0 +1,21 @@
+Status: FAIL
+Score: 1.00
+Update required: True
+
+Decision rationale:
+- Missing required sections: Conclusion, Introduction, Methodology, Results
+- Section Methodology has 0 slides; requires >= 1
+- Section Results has 0 slides; requires >= 1
+- Unassigned or low-confidence slides: 0, 1, 2, 3, 4, 5, 6, 7, 8
+
+Per-slide summary:
+- Slide 0 [(unknown)] coverage=N/A missing=[-]
+- Slide 1 [(unknown)] coverage=N/A missing=[-]
+- Slide 2 [(unknown)] coverage=N/A missing=[-]
+- Slide 3 [(unknown)] coverage=N/A missing=[-]
+- Slide 4 [(unknown)] coverage=N/A missing=[-]
+- Slide 5 [(unknown)] coverage=N/A missing=[-]
+- Slide 6 [(unknown)] coverage=N/A missing=[-]
+- Slide 7 [(unknown)] coverage=N/A missing=[-]
+- Slide 8 [(unknown)] coverage=N/A missing=[-]
+

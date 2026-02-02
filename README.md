@@ -137,8 +137,15 @@ PPTX ingestion (builtin)
 API (FastAPI)
 -------------
 
-- Install API deps and run the server:
-  - make run-api
+- One-shot start (installs everything then runs):
+  - make start-api
+  - Skip PPTX dep if not needed: NO_PPTX=1 make start-api
+
+- Or run step-by-step:
+  - make install        # project into local venv
+  - make deps-api       # FastAPI, uvicorn, requests, bs4, multipart
+  - make deps-pptx      # optional, for .pptx parsing
+  - make run-api        # start server
   - Server runs at http://localhost:8000
 - Endpoints:
   - POST `/evaluate` (multipart): fields `file` (upload), `auto_fix` (bool), `config_path` (optional)
@@ -147,3 +154,17 @@ API (FastAPI)
   - curl -F "file=@/absolute/path/deck.pptx" -F "auto_fix=true" -F "config_path=config/default.yaml" http://localhost:8000/evaluate
 - Example (evaluate a URL):
   - curl -X POST -H "Content-Type: application/json" -d '{"url":"https://example.com/page.html","auto_fix":true,"config_path":"config/default.yaml","allowed_exts":["pptx","md"],"crawl_links":true}' http://localhost:8000/evaluate-url
+
+More docs
+---------
+
+- Deep dive with sequence diagram and Julep mapping: `HowItWorksStepByStep.md`
+
+Frontend (React)
+----------------
+
+- Dev server: `make fe-dev` (after `npm install` in `frontend/` or `make fe-install`)
+- Configure API base: `frontend/.env` with `VITE_API_BASE_URL=http://localhost:8000`
+- Pages:
+  - Upload: upload PPTX/MD/TXT/JSON to `/evaluate`
+  - From URL: send URL to `/evaluate-url` (optionally crawl links)

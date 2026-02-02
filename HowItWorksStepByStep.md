@@ -225,3 +225,62 @@ sequenceDiagram
 ---
 
 Questions or requests for wiring a specific Paper2Slides CLI JSON format or a Julep agent template? Share details and I’ll adapt the adapter/orchestrator quickly.
+
+## 12) Agents and Julep Orchestration (deep dive)
+
+This section details each agent’s role in the builtin pipeline and how it maps to a Julep-style workflow.
+
+- Normalizer (Tool)
+  - Input: `Deck`
+  - Output: normalized `Deck`
+  - Mapping to Julep: ToolTask calling the same Python function (deterministic, idempotent).
+
+- SectionTagger (Heuristic today; LLM-capable)
+  - Input: `Deck`, `config.section_rules`
+  - Output: `Deck` with `slide.section` and `slide.section_confidence`
+  - Mapping to Julep: Agent prompting an LLM to assign sections and confidence, returning structured JSON mapped onto slides. Heuristic ToolTask remains an alternative path.
+
+- KeywordChecker (Tool)
+  - Input: `Deck`, `config.required_keywords`
+  - Output: `List[SlideEvaluation]` with coverage/missing
+  - Mapping to Julep: ToolTask; optionally extend with LLM evidence extraction per slide in parallel branches.
+
+- ComplianceDecider (Tool)
+  - Input: `List[SlideEvaluation]`, `config.thresholds`, `config.strict`
+  - Output: `ComplianceDecision` + section summaries and reasons
+  - Mapping to Julep: ToolTask; pure logic, easy to retry.
+
+- Report (Tool)
+  - Input: `ComplianceReport`
+  - Output: JSON + text artifacts
+  - Mapping to Julep: ToolTask; can attach Julep trace IDs into report meta.
+
+- Generator (Agent)
+  - Input: `Deck`, `ComplianceReport`, thresholds/keywords
+  - Output: Updated `Deck` with placeholder/draft content
+  - Mapping to Julep: LLM Agent that proposes new bullets/notes for missing keywords/sections, constrained to structured JSON.
+
+Julep state model (proposed)
+- A single state object passed through steps, e.g. `{ deck, evaluations, decision, section_summaries, artifacts }`.
+- Steps read/write their fields; Julep records tool/agent invocations, errors, retries.
+
+Execution graph
+- Linear DAG: Normalize → Tag → Check → Decide → Report → [Generate].
+- Optional parallelism: per-slide evidence extraction if added later.
+
+Error handling
+- Tool steps: raise explicit exceptions, retried based on policy.
+- LLM steps: retry/backoff, guardrails on JSON schema; fallback to heuristic path for Tagger if needed.
+
+Integration plan behind `orchestrator: julep`
+- Keep builtin as default.
+- When `julep` is selected: construct a Julep workflow with ToolTasks (Normalizer, Checker, Decider, Report) and Agents (Tagger, Generator) and maintain identical I/O contracts.
+- Config toggles to blend approaches (e.g., `tagger: heuristic|llm`, `generator: off|llm`).
+
+Example Julep flow (conceptual)
+1. ToolTask: `normalize_deck(state.deck)`
+2. Agent: `tag_sections_llm(state.deck)` or ToolTask heuristic
+3. ToolTask: `check_keywords(state.deck, cfg)` → `state.evaluations`
+4. ToolTask: `decide(state.evaluations, cfg)` → `state.decision` (+summaries)
+5. ToolTask: `save_report(...)` → `state.artifacts`
+6. Agent (optional): `generate_missing_llm(...)` → export updated deck

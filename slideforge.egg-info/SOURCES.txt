@@ -1,6 +1,7 @@
 README.md
 pyproject.toml
 slideforge/__init__.py
+slideforge/api.py
 slideforge/cli.py
 slideforge/config.py
 slideforge/models.py

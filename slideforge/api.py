@@ -8,6 +8,7 @@ import uuid
 from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from slideforge.config import load_config
@@ -15,6 +16,21 @@ from slideforge.pipeline.orchestrator import run_pipeline
 
 
 app = FastAPI(title="SlideForge API", version="0.1.0")
+
+# Enable CORS for local frontend dev
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "*",  # adjust for production
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/health")
@@ -157,4 +173,3 @@ async def evaluate_url(
             results.append({"url": u, "error": str(e)})
 
     return JSONResponse({"results": results, "run_workspace": ws})
-
