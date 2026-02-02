@@ -28,7 +28,11 @@ Quick start
 
    - pip install -e .
 
-3) Use a curated static example (checked in)
+3) If you plan to evaluate PPTX files, install the PPTX parser dependency
+
+   - make deps-pptx
+
+4) Use a curated static example (checked in)
 
    - slideforge run --input examples_static/deck_curated.json --config config/default.yaml --out build_static --auto-fix
 
@@ -36,7 +40,7 @@ Quick start
 
    - slideforge sample --out examples/
 
-4) Run end-to-end on the sample deck
+5) Run end-to-end on the sample deck
 
    - slideforge run --input examples/deck_sample.json --config config/default.yaml --out build/ --auto-fix
 
@@ -122,3 +126,24 @@ Reports
 
 - JSON: `compliance_report.json` includes `overall.status`, `overall.update_required`, `overall.reasons`, `per_slide`, and `section_summaries`.
 - Text: `compliance_report.txt` is a human-readable summary with decision rationale and section summaries.
+PPTX ingestion (builtin)
+------------------------
+
+- Install the optional dependency once: `make deps-pptx` (installs `python-pptx` into the local venv).
+- Then run with a PowerPoint file:
+  - `make run INPUT=/absolute/path/to/deck.pptx AUTO_FIX=1`
+- The parser extracts slide titles and text boxes as bullets; the pipeline then tags sections, checks keywords, and decides PASS/NEEDS_UPDATE/FAIL.
+
+API (FastAPI)
+-------------
+
+- Install API deps and run the server:
+  - make run-api
+  - Server runs at http://localhost:8000
+- Endpoints:
+  - POST `/evaluate` (multipart): fields `file` (upload), `auto_fix` (bool), `config_path` (optional)
+  - POST `/evaluate-url` (JSON): `{ "url": "https://...", "auto_fix": true, "config_path": "config/default.yaml", "allowed_exts": ["pptx","pdf"], "crawl_links": true }`
+- Example (upload PPTX via curl):
+  - curl -F "file=@/absolute/path/deck.pptx" -F "auto_fix=true" -F "config_path=config/default.yaml" http://localhost:8000/evaluate
+- Example (evaluate a URL):
+  - curl -X POST -H "Content-Type: application/json" -d '{"url":"https://example.com/page.html","auto_fix":true,"config_path":"config/default.yaml","allowed_exts":["pptx","md"],"crawl_links":true}' http://localhost:8000/evaluate-url

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 import subprocess, shlex, tempfile
 
 from slideforge.models import Deck, Slide
@@ -25,10 +25,11 @@ def parse_deck(input_path: str, config: Optional[Dict[str, Any]] = None) -> Deck
 
     # Stubs for PDF/PPTX; replace with Paper2Slides integration.
     # For now, raise a friendly message.
-    if ext in (".pdf", ".pptx"):
+    if ext == ".pptx":
+        return _parse_pptx(input_path)
+    if ext == ".pdf":
         raise NotImplementedError(
-            f"Parsing {ext} is not implemented in the scaffold. "
-            f"Use JSON/Markdown for now or integrate Paper2Slides."
+            "PDF parsing not implemented in builtin path. Use Paper2Slides backend or provide JSON/MD/TXT."
         )
 
     raise ValueError(f"Unsupported input format: {ext}")
@@ -121,3 +122,50 @@ def _parse_via_paper2slides_cli(input_path: str, config: Dict[str, Any]) -> Deck
             with open(out_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
             return Deck.from_dict(data)
+
+
+def _parse_pptx(path: str) -> Deck:
+    try:
+        from pptx import Presentation  # type: ignore
+    except Exception as e:
+        raise RuntimeError(
+            "PPTX parsing requires the 'python-pptx' package. Install it, e.g.:\n"
+            "  pip install python-pptx"
+        ) from e
+
+    prs = Presentation(path)
+    slides: List[Slide] = []
+
+    def text_from_shape(shape) -> List[str]:
+        lines: List[str] = []
+        if not hasattr(shape, "has_text_frame"):
+            return lines
+        if not shape.has_text_frame:
+            return lines
+        for p in shape.text_frame.paragraphs:
+            txt = "".join([run.text for run in p.runs]).strip() if p.runs else (p.text or "").strip()
+            if txt:
+                lines.append(txt)
+        return lines
+
+    for idx, s in enumerate(prs.slides):
+        title = "Untitled"
+        bullets: List[str] = []
+        # Try title placeholders first
+        for shp in s.shapes:
+            if shp.is_placeholder and getattr(shp.placeholder_format, "type", None) == 1:  # TITLE
+                lines = text_from_shape(shp)
+                if lines:
+                    title = lines[0]
+                    break
+        # Collect text from non-title shapes
+        for shp in s.shapes:
+            if shp.is_placeholder and getattr(shp.placeholder_format, "type", None) == 1:
+                continue
+            bullets += text_from_shape(shp)
+        # Trim bullets if they duplicate title
+        bullets = [b for b in bullets if b != title]
+        slides.append(Slide(index=idx, title=title, bullets=bullets))
+
+    meta: Dict[str, Any] = {"source": os.path.basename(path), "format": "pptx"}
+    return Deck(meta=meta, slides=slides)

@@ -137,6 +137,7 @@ This document explains the repository structure, the execution flow, the core da
   - `make env-info` / `make shell` → inspect/use the venv
   - `make sample` / `make run` / `make run-relaxed` / `make run-paper2slides`
   - `make deps-pptx` → install `python-pptx` for PPTX parsing
+  - `make run-api` → install API deps and start FastAPI server
   - `make test` → run smoke test
 
 ## 8) Outputs (what you get)
@@ -151,6 +152,7 @@ This document explains the repository structure, the execution flow, the core da
 sequenceDiagram
   autonumber
   participant User
+  participant API as FastAPI
   participant CLI as slideforge CLI
   participant Cfg as Config Loader
   participant Orch as Orchestrator
@@ -158,6 +160,25 @@ sequenceDiagram
   participant Agents
   participant Report
   participant Gen as Generator
+
+  User->>API: POST /evaluate (file)
+  API->>Cfg: load_config(cfg)
+  API->>Orch: run_pipeline(input, cfg, out, auto_fix)
+  Orch->>Parser: parse_deck(input, cfg)
+  Parser-->>Orch: Deck
+  Orch->>Agents: normalize/tag/check/decide
+  Agents-->>Orch: ComplianceDecision
+  Orch->>Report: save_report
+  Orch-->>API: outputs
+  API-->>User: report JSON + artifacts
+
+  User->>API: POST /evaluate-url (url[, crawl_links])
+  API->>API: download urls → files
+  loop files
+    API->>Orch: run_pipeline(file, cfg, out, auto_fix)
+    Orch-->>API: outputs
+  end
+  API-->>User: results[]
 
   User->>CLI: run --input deck.pptx --config cfg.yaml --out build --auto-fix
   CLI->>Cfg: load_config(cfg.yaml)

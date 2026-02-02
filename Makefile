@@ -9,11 +9,11 @@ P2S_CONFIG ?= config/paper2slides_example.yaml
 P2S_OUT ?= build_p2s
 
 # Project-local virtual environment
-VENV := hackathon2026
+VENV := venv
 PY := $(VENV)/bin/python
 PIP := $(VENV)/bin/pip
 
-.PHONY: help venv env-info shell install sample run run-relaxed run-paper2slides test clean clean-venv
+.PHONY: help venv env-info shell install sample run run-relaxed run-paper2slides test clean clean-venv deps-api run-api
 
 help:
 	@echo "Targets:"
@@ -29,6 +29,8 @@ help:
 	@echo "  test            Run smoke test (default & relaxed)"
 	@echo "  clean           Remove build directories and examples"
 	@echo "  clean-venv      Remove local venv"
+	@echo "  deps-api        Install API dependencies (FastAPI, Uvicorn, requests, bs4)"
+	@echo "  run-api         Start FastAPI server with uvicorn (uses venv)"
 
 venv:
 	@test -d $(VENV) || python3 -m venv $(VENV)
@@ -36,6 +38,9 @@ venv:
 
 install: venv
 	@$(PY) -m pip install -e .
+
+deps-pptx: venv
+	@$(PY) -m pip install python-pptx
 
 env-info: venv
 	@echo "Python: $(PY)" && $(PY) --version
@@ -64,3 +69,9 @@ clean:
 
 clean-venv:
 	rm -rf $(VENV)
+
+deps-api: install
+	@$(PY) -m pip install fastapi uvicorn[standard] requests beautifulsoup4 python-multipart
+
+run-api: deps-api
+	@$(PY) -m uvicorn slideforge.api:app --reload --host 0.0.0.0 --port 8000
