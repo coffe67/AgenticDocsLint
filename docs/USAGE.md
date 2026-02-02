@@ -10,7 +10,10 @@ Install (editable)
 Generate samples
 ----------------
 
-- slideforge sample --out examples/
+- Curated static example (versioned):
+  - slideforge run --input examples_static/deck_curated.json --config config/default.yaml --out build_static --auto-fix
+- Generate fresh samples:
+  - slideforge sample --out examples/
 
 Run the pipeline
 ----------------

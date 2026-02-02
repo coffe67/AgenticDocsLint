@@ -1,0 +1,10 @@
+{
+  "meta": {"title": "Curated Demo Deck", "author": "SlideForge", "source": "examples_static/deck_curated.json"},
+  "slides": [
+    {"index": 0, "title": "Introduction", "bullets": ["Project goal", "Motivation"], "notes": ""},
+    {"index": 1, "title": "Methodology", "bullets": ["Data", "Model", "Training"], "notes": ""},
+    {"index": 2, "title": "Results", "bullets": ["Accuracy", "Evaluation"], "notes": ""},
+    {"index": 3, "title": "Conclusion", "bullets": ["Summary", "Next steps"], "notes": ""}
+  ]
+}
+
