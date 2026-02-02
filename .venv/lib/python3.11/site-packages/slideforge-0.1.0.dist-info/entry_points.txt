@@ -1,0 +1,2 @@
+[console_scripts]
+slideforge = slideforge.cli:main
