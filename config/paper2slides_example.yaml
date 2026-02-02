@@ -1,0 +1,42 @@
+# Example configuration to use Paper2Slides CLI as the parser backend
+
+parser:
+  backend: paper2slides
+  paper2slides:
+    # Example: CLI prints JSON to stdout. Replace with your actual command.
+    command: "paper2slides --input {input} --output-format json"
+    output: stdout
+
+orchestrator: builtin
+
+section_rules:
+  Introduction:
+    keywords: [intro, overview, background, motivation]
+  Methodology:
+    keywords: [method, methodology, approach, pipeline, data, model]
+  Results:
+    keywords: [results, findings, accuracy, metrics, evaluation]
+  Conclusion:
+    keywords: [conclusion, summary, next steps, future work]
+
+required_keywords:
+  Introduction: [goal, motivation]
+  Methodology: [data, model, training]
+  Results: [accuracy, evaluation]
+  Conclusion: [summary, next steps]
+
+thresholds:
+  coverage_pass: 0.8
+  coverage_needs_update: 0.5
+
+strict:
+  require_all_sections: true
+  min_per_section_coverage: 0.6
+  min_slide_coverage: 0.4
+  min_section_confidence: 0.5
+  min_slides_per_section:
+    Methodology: 1
+    Results: 1
+  disallow_unassigned: true
+  fail_on_section_avg_below: true
+

@@ -74,6 +74,15 @@ Julep orchestrator flag
 - Set `orchestrator: julep` in config to use the Julep path.
 - Current implementation falls back to the builtin pipeline unless Julep is installed and wired. It preserves outputs and structure while enabling a migration path to real Julep agents.
 
+Paper2Slides setup
+------------------
+
+- Install Paper2Slides following its upstream docs or make the CLI available on PATH.
+- Verify the CLI works, e.g.: `paper2slides --help`
+- Use the sample config `config/paper2slides_example.yaml` and run:
+  - `slideforge run --input /path/to/slides.pdf --config config/paper2slides_example.yaml --out build_p2s --auto-fix`
+- The adapter expects the CLI to print structured deck JSON to stdout with the placeholder `{input}` replaced by the input file path. If your CLI writes to a file, set `parser.paper2slides.output` and use `{output}` in the command template as documented in the config.
+
 License
 -------
 

@@ -42,3 +42,11 @@ Outputs
 - build/compliance_report.txt: human-readable summary
 - build/updated_deck.json / .md: present when --auto-fix is supplied
 
+Paper2Slides via CLI
+--------------------
+
+- Ensure the Paper2Slides CLI is installed and available in PATH.
+- Use the example config:
+  - `slideforge run --input /path/to/slides.pdf --config config/paper2slides_example.yaml --out build_p2s --auto-fix`
+- The config uses `parser.backend: paper2slides` with a command template that supports `{input}`.
+- If your CLI writes to a file, set `parser.paper2slides.output` and include `{output}` in the command template. The adapter loads that JSON file.
