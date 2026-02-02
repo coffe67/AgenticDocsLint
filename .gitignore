@@ -34,6 +34,7 @@ venv/
 ENV/
 env/
 .venv.bak/
+hackathon2026/
 
 # Unit test / coverage reports
 .coverage
@@ -84,4 +85,3 @@ build_relaxed/
 # Reports (if generated at root)
 *.report.json
 *.report.txt
-

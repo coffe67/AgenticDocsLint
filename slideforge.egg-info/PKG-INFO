@@ -36,7 +36,11 @@ Quick start
 
    - pip install -e .
 
-3) Generate sample files
+3) Use a curated static example (checked in)
+
+   - slideforge run --input examples_static/deck_curated.json --config config/default.yaml --out build_static --auto-fix
+
+   Or generate fresh samples:
 
    - slideforge sample --out examples/
 
