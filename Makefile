@@ -13,7 +13,7 @@ VENV := venv
 PY := $(VENV)/bin/python
 PIP := $(VENV)/bin/pip
 
-.PHONY: help venv env-info shell install sample run run-relaxed run-paper2slides test clean clean-venv deps-api run-api deps-pptx bootstrap-api start-api fe-install fe-dev fe-build
+.PHONY: help venv env-info shell install sample run run-relaxed run-paper2slides test clean clean-venv deps-api run-api deps-pptx bootstrap-api start-api fe-install fe-dev fe-build docker-build docker-up docker-down
 
 help:
 	@echo "Targets:"
@@ -36,6 +36,9 @@ help:
 	@echo "  fe-install      Install frontend dependencies (in ./frontend)"
 	@echo "  fe-dev          Start frontend dev server (Vite)"
 	@echo "  fe-build        Build frontend for production"
+	@echo "  docker-build    Build API and web images"
+	@echo "  docker-up       Start full stack with docker-compose"
+	@echo "  docker-down     Stop stack and remove containers"
 
 venv:
 	@test -d $(VENV) || python3 -m venv $(VENV)
@@ -97,3 +100,12 @@ fe-dev:
 
 fe-build:
 	@cd frontend && npm run build
+
+docker-build:
+	docker compose build
+
+docker-up:
+	docker compose up -d
+
+docker-down:
+	docker compose down
