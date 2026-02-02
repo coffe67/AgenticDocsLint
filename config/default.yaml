@@ -36,3 +36,12 @@ strict:
   disallow_unassigned: true
   # If true, section avg below min causes FAIL; if false, it's a NEEDS_UPDATE
   fail_on_section_avg_below: true
+parser:
+  backend: builtin  # options: builtin, paper2slides
+  paper2slides:
+    # Command should output structured deck JSON to stdout
+    # Example placeholder; replace with your Paper2Slides CLI
+    command: "paper2slides --input {input} --output-format json"
+    output: stdout  # or a file path template like {tmp}/deck.json
+
+orchestrator: builtin  # options: builtin, julep

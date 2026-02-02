@@ -2,13 +2,18 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+import subprocess, shlex, tempfile
 
 from slideforge.models import Deck, Slide
 
 
-def parse_deck(input_path: str) -> Deck:
+def parse_deck(input_path: str, config: Optional[Dict[str, Any]] = None) -> Deck:
     ext = os.path.splitext(input_path)[1].lower()
+    # If configured for Paper2Slides backend, delegate for supported types
+    if config and (config.get("parser", {}).get("backend") == "paper2slides"):
+        return _parse_via_paper2slides_cli(input_path, config)
+
     if ext == ".json":
         with open(input_path, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -79,3 +84,40 @@ def _parse_text(path: str) -> Deck:
     meta = {"source": os.path.basename(path), "format": "text"}
     return Deck(meta=meta, slides=slides)
 
+
+def _parse_via_paper2slides_cli(input_path: str, config: Dict[str, Any]) -> Deck:
+    ps_cfg = (config.get("parser", {}) or {}).get("paper2slides", {}) or {}
+    cmd_tpl = ps_cfg.get("command")
+    output_mode = (ps_cfg.get("output") or "stdout").lower()
+    if not cmd_tpl:
+        raise RuntimeError("parser.backend=paper2slides but no command configured under parser.paper2slides.command")
+
+    # Build command string
+    # Support a temporary directory placeholder {tmp}
+    with tempfile.TemporaryDirectory() as tmpdir:
+        cmd = cmd_tpl.replace("{input}", shlex.quote(input_path)).replace("{tmp}", shlex.quote(tmpdir))
+        if output_mode == "stdout":
+            proc = subprocess.run(cmd, shell=True, check=False, capture_output=True, text=True)
+            if proc.returncode != 0:
+                raise RuntimeError(f"Paper2Slides CLI failed: code={proc.returncode}\n{proc.stderr}")
+            try:
+                data = json.loads(proc.stdout)
+            except json.JSONDecodeError as e:
+                raise RuntimeError("Paper2Slides CLI did not return valid JSON on stdout") from e
+            return Deck.from_dict(data)
+        else:
+            out_path = ps_cfg.get("output")
+            if not out_path or "{" in out_path:
+                # allow template using {tmp} in output path
+                out_path = (out_path or "{tmp}/deck.json").replace("{tmp}", tmpdir)
+            # Append output path to command if it contains {output}
+            if "{output}" in cmd_tpl:
+                cmd = cmd_tpl.replace("{input}", shlex.quote(input_path)).replace("{tmp}", shlex.quote(tmpdir)).replace("{output}", shlex.quote(out_path))
+            proc = subprocess.run(cmd, shell=True, check=False, capture_output=True, text=True)
+            if proc.returncode != 0:
+                raise RuntimeError(f"Paper2Slides CLI failed: code={proc.returncode}\n{proc.stderr}")
+            if not os.path.exists(out_path):
+                raise RuntimeError(f"Paper2Slides CLI expected output not found: {out_path}")
+            with open(out_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return Deck.from_dict(data)

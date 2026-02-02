@@ -15,9 +15,14 @@ from slideforge.agents.generator import generate_missing, export_deck_markdown
 
 
 def run_pipeline(input_path: str, config: Dict[str, Any], out_dir: str, auto_fix: bool = False) -> Dict[str, Any]:
+    # Dispatch to Julep orchestrator if configured
+    if (config.get("orchestrator") or "builtin").lower() == "julep":
+        from .julep_orchestrator import run_pipeline as run_pipeline_julep
+        return run_pipeline_julep(input_path, config, out_dir, auto_fix)
+
     os.makedirs(out_dir, exist_ok=True)
 
-    deck = parse_deck(input_path)
+    deck = parse_deck(input_path, config)
     deck = normalize_deck(deck)
     deck = tag_sections(deck, config)
     evaluations = check_keywords(deck, config)

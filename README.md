@@ -59,6 +59,21 @@ Future integration
 - Swap heuristics with LLM-backed agents (Julep-style orchestration)
 - Add exporters (PPTX, GitHub PR, Confluence)
 
+Paper2Slides integration (CLI)
+------------------------------
+
+- Set in `config/default.yaml` (or your config):
+  - `parser.backend: paper2slides`
+  - `parser.paper2slides.command`: command that outputs JSON to stdout, supports `{input}` and optional `{tmp}` placeholders.
+  - Example: `paper2slides --input {input} --output-format json`
+- Supported inputs via Paper2Slides backend include `.pdf`/`.pptx` as provided by your CLI.
+
+Julep orchestrator flag
+-----------------------
+
+- Set `orchestrator: julep` in config to use the Julep path.
+- Current implementation falls back to the builtin pipeline unless Julep is installed and wired. It preserves outputs and structure while enabling a migration path to real Julep agents.
+
 License
 -------
 
@@ -94,4 +109,3 @@ Reports
 
 - JSON: `compliance_report.json` includes `overall.status`, `overall.update_required`, `overall.reasons`, `per_slide`, and `section_summaries`.
 - Text: `compliance_report.txt` is a human-readable summary with decision rationale and section summaries.
-
