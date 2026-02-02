@@ -1,0 +1,22 @@
+Status: FAIL
+Score: 0.88
+Update required: True
+
+Decision rationale:
+- Slides missing required keywords: 2
+- Section Results average coverage 0.50 < 0.60
+
+Section summaries:
+- Conclusion: slides=1 avg_cov=1.0 below_min=[-]
+- Introduction: slides=1 avg_cov=1.0 below_min=[-]
+- Methodology: slides=1 avg_cov=1.0 below_min=[-]
+- Results: slides=1 avg_cov=0.5 below_min=[-]
+
+Per-slide summary:
+- Slide 0 [Introduction] coverage=1.00 missing=[-]
+- Slide 1 [Methodology] coverage=1.00 missing=[-]
+- Slide 2 [Results] coverage=0.50 missing=[evaluation]
+- Slide 3 [Conclusion] coverage=1.00 missing=[-]
+
+Recommendations:
+- Slide 2 (Results): add missing keywords -> evaluation

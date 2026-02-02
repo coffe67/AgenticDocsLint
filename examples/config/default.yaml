@@ -1,0 +1,38 @@
+# Default configuration for SlideForge
+
+section_rules:
+  Introduction:
+    keywords: [intro, overview, background, motivation]
+  Methodology:
+    keywords: [method, methodology, approach, pipeline, data, model]
+  Results:
+    keywords: [results, findings, accuracy, metrics, evaluation]
+  Conclusion:
+    keywords: [conclusion, summary, next steps, future work]
+
+required_keywords:
+  Introduction: [goal, motivation]
+  Methodology: [data, model, training]
+  Results: [accuracy, evaluation]
+  Conclusion: [summary, next steps]
+
+thresholds:
+  coverage_pass: 0.8
+  coverage_needs_update: 0.5
+
+strict:
+  require_all_sections: true
+  # Average coverage per required section must meet this
+  min_per_section_coverage: 0.6
+  # Each slide should meet at least this coverage (when keywords exist)
+  min_slide_coverage: 0.4
+  # Minimum confidence to accept a section tag; below is considered unassigned
+  min_section_confidence: 0.5
+  # Minimum slides per section (optional)
+  min_slides_per_section:
+    Methodology: 1
+    Results: 1
+  # Whether slides with no/low-confidence section should trigger updates
+  disallow_unassigned: true
+  # If true, section avg below min causes FAIL; if false, it's a NEEDS_UPDATE
+  fail_on_section_avg_below: true

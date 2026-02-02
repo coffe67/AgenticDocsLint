@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/report.schema.json",
+  "title": "ComplianceReport",
+  "type": "object",
+  "required": ["meta", "per_slide", "overall"],
+  "properties": {
+    "meta": { "type": "object" },
+    "per_slide": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["slide_index"],
+        "properties": {
+          "slide_index": { "type": "integer" },
+          "section": { "type": ["string", "null"] },
+          "section_confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+          "keyword_result": {
+            "type": ["object", "null"],
+            "required": ["section", "required_keywords", "found", "missing", "coverage"],
+            "properties": {
+              "section": { "type": "string" },
+              "required_keywords": { "type": "array", "items": { "type": "string" } },
+              "found": { "type": "array", "items": { "type": "string" } },
+              "missing": { "type": "array", "items": { "type": "string" } },
+              "coverage": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          }
+        }
+      }
+    },
+    "overall": {
+      "type": "object",
+      "required": ["status", "score", "update_required", "recommendations"],
+      "properties": {
+        "status": { "type": "string", "enum": ["PASS", "NEEDS_UPDATE", "FAIL"] },
+        "score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "update_required": { "type": "boolean" },
+        "reasons": { "type": "array", "items": { "type": "string" } },
+        "recommendations": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+    ,
+    "section_summaries": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "required": ["section", "slides", "avg_coverage"],
+        "properties": {
+          "section": { "type": "string" },
+          "slides": { "type": "integer", "minimum": 0 },
+          "avg_coverage": { "type": "number", "minimum": 0, "maximum": 1 },
+          "below_min_slides": { "type": "array", "items": { "type": "integer" } }
+        }
+      }
+    }
+  }
+}

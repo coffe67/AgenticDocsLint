@@ -1,0 +1,24 @@
+flowchart TB
+  %% SlideForge / SlideCheck Workflow (Paper2Slides + Julep)
+
+  A[Input: PDF / PPTX Slide Deck] --> B[Paper2Slides استخراج/Parsing]
+  B --> C[Structured Deck JSON\n(DeckForEvaluation)]
+
+  subgraph J[Julep Orchestrator (Agentic Workflow)]
+    C --> D[SlideNormalizer\nNormalize & clean fields]
+    D --> E[SectionTagger\nAssign section per slide\n+ confidence]
+    E --> F[KeywordChecker\nCheck required keywords\n+ evidence]
+    F --> G[ComplianceDecider\nPASS / NEEDS_UPDATE / FAIL\n+ recommendations]
+  end
+
+  G --> H[Compliance Report\n(JSON + human-readable)]
+
+  %% Optional generation branch
+  H -->|Optional: Auto-fix enabled| I[Slide Generator Agent\nGenerate missing sections/slides\nDraft improved content]
+  I --> K[Updated Deck Output\n(PPTX / Markdown / JSON)]
+  H -->|No auto-fix| L[Action Items for Authors\n(Jira tickets / checklist updates)]
+
+  %% Optional integrations
+  K --> M[Export / Publish\nGitHub PR, Confluence, SharePoint]
+  L --> M
+

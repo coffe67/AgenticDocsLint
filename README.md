@@ -1,0 +1,97 @@
+SlideForge / SlideCheck
+========================
+
+Goal: “We extract structure from slides, evaluate them with specialized AI agents, and optionally generate missing content — all in one automated workflow.”
+
+This repo provides an initial, local-first scaffold inspired by Paper2Slides (extraction) and Julep (agentic orchestration). It includes:
+
+- A simple slide deck model (JSON) and schema
+- An orchestrated pipeline of agents:
+  - SlideNormalizer
+  - SectionTagger
+  - KeywordChecker
+  - ComplianceDecider
+  - Report generator
+- Optional Slide Generator to draft missing sections
+- A CLI to run end-to-end or individual stages
+
+Note: Real PDF/PPTX parsing and LLM-based generation are stubbed with pluggable interfaces, so you can later integrate Paper2Slides and your preferred model provider. For now, JSON and Markdown inputs are supported.
+
+Quick start
+-----------
+
+1) Create a virtual environment (optional)
+
+   - python -m venv .venv && source .venv/bin/activate
+
+2) Install (editable)
+
+   - pip install -e .
+
+3) Generate sample files
+
+   - slideforge sample --out examples/
+
+4) Run end-to-end on the sample deck
+
+   - slideforge run --input examples/deck_sample.json --config config/default.yaml --out build/ --auto-fix
+
+Outputs
+-------
+
+- Compliance report (JSON + text) in the output directory
+- Optionally, an updated deck (JSON + Markdown) when --auto-fix is used
+
+Design
+------
+
+- slideforge/parsers/paper2slides_adapter.py: pluggable parser interface; supports JSON/Markdown today
+- slideforge/agents/*: stateless, testable components for each stage
+- slideforge/pipeline/orchestrator.py: ties everything together following the flowchart
+- schemas/: JSON Schemas for deck and report payloads
+- config/: Default rules (required keywords per section, thresholds)
+- docs/: Mermaid flowchart and architecture notes
+
+Future integration
+------------------
+
+- Replace parser adapter with Paper2Slides output
+- Swap heuristics with LLM-backed agents (Julep-style orchestration)
+- Add exporters (PPTX, GitHub PR, Confluence)
+
+License
+-------
+
+Open source friendly — add your preferred license file when ready.
+
+Configuration
+-------------
+
+Use YAML config files to tune rules. Defaults live in `config/default.yaml`. A relaxed example is provided at `config/strict_relaxed.yaml`.
+
+- section_rules: heuristic hints for tagging sections
+- required_keywords: per-section keywords to validate coverage
+- thresholds:
+  - coverage_pass: overall coverage to get PASS
+  - coverage_needs_update: overall coverage below this yields FAIL
+- strict:
+  - require_all_sections: if true, all sections in `required_keywords` must appear
+  - min_per_section_coverage: average coverage each section must meet
+  - min_slide_coverage: minimum coverage for individual slides (when section has keywords)
+  - min_section_confidence: below this, a tag is considered unassigned
+  - min_slides_per_section: map of section -> required slide count
+  - disallow_unassigned: flag unassigned/low-confidence slides
+  - fail_on_section_avg_below: when true, section-average shortfalls cause FAIL; otherwise NEEDS_UPDATE
+
+CLI usage
+---------
+
+- Generate samples: `slideforge sample --out examples/`
+- Run pipeline: `slideforge run --input <deck.json|.md|.txt> --config config/default.yaml --out build/ [--auto-fix]`
+
+Reports
+-------
+
+- JSON: `compliance_report.json` includes `overall.status`, `overall.update_required`, `overall.reasons`, `per_slide`, and `section_summaries`.
+- Text: `compliance_report.txt` is a human-readable summary with decision rationale and section summaries.
+

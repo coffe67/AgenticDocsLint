@@ -1,0 +1,54 @@
+{
+  "meta": {
+    "title": "Demo Deck",
+    "author": "Example",
+    "source": "deck_sample.json"
+  },
+  "slides": [
+    {
+      "index": 0,
+      "title": "Introduction",
+      "bullets": [
+        "Project goals",
+        "Motivation"
+      ],
+      "notes": "",
+      "section": "Introduction",
+      "section_confidence": 0.8
+    },
+    {
+      "index": 1,
+      "title": "Methodology",
+      "bullets": [
+        "Data",
+        "Model",
+        "Training"
+      ],
+      "notes": "",
+      "section": "Methodology",
+      "section_confidence": 1.0
+    },
+    {
+      "index": 2,
+      "title": "Results",
+      "bullets": [
+        "Accuracy",
+        "Latency"
+      ],
+      "notes": "",
+      "section": "Results",
+      "section_confidence": 0.8
+    },
+    {
+      "index": 3,
+      "title": "Conclusion",
+      "bullets": [
+        "Summary",
+        "Next steps"
+      ],
+      "notes": "",
+      "section": "Conclusion",
+      "section_confidence": 1.0
+    }
+  ]
+}

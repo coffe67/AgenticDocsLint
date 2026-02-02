@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/deck.schema.json",
+  "title": "Deck",
+  "type": "object",
+  "required": ["meta", "slides"],
+  "properties": {
+    "meta": { "type": "object" },
+    "slides": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["index", "title"],
+        "properties": {
+          "index": { "type": "integer" },
+          "title": { "type": "string" },
+          "bullets": { "type": "array", "items": { "type": "string" } },
+          "notes": { "type": ["string", "null"] },
+          "section": { "type": ["string", "null"] },
+          "section_confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 }
+        }
+      }
+    }
+  }
+}
+

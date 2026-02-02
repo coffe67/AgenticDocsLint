@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=67", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "slideforge"
+version = "0.1.0"
+description = "Extract, evaluate, and optionally generate slide content in an automated workflow."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+  { name = "SlideForge Team" }
+]
+dependencies = []
+
+[project.scripts]
+slideforge = "slideforge.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["slideforge*"]
+
