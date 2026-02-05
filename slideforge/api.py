@@ -196,7 +196,7 @@ async def generate_sprint_report(
         results: Dict[str, str] = {}
         if "pptx" in formats:
             pptx_path = os.path.join(out_dir, "sprint_report.pptx")
-            export_pptx(deck, pptx_path, theme=theme)
+            export_pptx(deck, pptx_path, theme=theme, jira=jira)
             results["pptx"] = pptx_path
         if "md" in formats:
             from slideforge.agents.generator import export_deck_markdown

@@ -80,7 +80,7 @@ def _select_top_issues(issues: List[Dict[str, Any]], limit: int = 10) -> List[Di
     return sorted(issues, key=keyfn)[:limit]
 
 
-def export_pptx(deck: Deck, out_path: str, theme: Optional[Dict[str, Any]] = None) -> None:
+def export_pptx(deck: Deck, out_path: str, theme: Optional[Dict[str, Any]] = None, jira: Optional[Dict[str, Any]] = None) -> None:
     try:
         from pptx import Presentation  # type: ignore
         from pptx.util import Inches, Pt  # type: ignore
@@ -92,6 +92,10 @@ def export_pptx(deck: Deck, out_path: str, theme: Optional[Dict[str, Any]] = Non
     # Theme (basic)
     title_font = theme.get("title_font", {}) if theme else {}
     body_font = theme.get("body_font", {}) if theme else {}
+
+    logo_path = None
+    if theme and isinstance(theme, dict):
+        logo_path = theme.get("logo")
 
     for s in deck.slides:
         layout = prs.slide_layouts[1 if s.index > 0 else 0]  # title slide for first, title+content afterwards
@@ -125,6 +129,30 @@ def export_pptx(deck: Deck, out_path: str, theme: Optional[Dict[str, Any]] = Non
                                 r.font.size = Pt(body_font["size"])  # type: ignore
                 except Exception:
                     pass
+        # logo
+        try:
+            if logo_path and os.path.exists(str(logo_path)):
+                slide.shapes.add_picture(str(logo_path), prs.slide_width - Inches(2), Inches(0.2), width=Inches(1.5))
+        except Exception:
+            pass
+
+    # Optional: add charts if jira provides time series
+    if jira:
+        charts = _prepare_charts(jira)
+        for ch in charts:
+            try:
+                blank = prs.slide_layouts[6]  # blank
+                sld = prs.slides.add_slide(blank)
+                # title
+                txbx = sld.shapes.add_textbox(Inches(0.5), Inches(0.2), Inches(9), Inches(1))
+                tf = txbx.text_frame
+                tf.text = ch.get("title", "Chart")
+                # image
+                img_path = ch.get("path")
+                if img_path and os.path.exists(img_path):
+                    sld.shapes.add_picture(img_path, Inches(0.5), Inches(1.2), width=Inches(9))
+            except Exception:
+                continue
 
     prs.save(out_path)
 
@@ -170,3 +198,55 @@ def export_png_summary(jira: Dict[str, Any], out_path: str, theme: Optional[Dict
 
     im.save(out_path)
 
+
+def _prepare_charts(jira: Dict[str, Any]) -> List[Dict[str, Any]]:
+    charts: List[Dict[str, Any]] = []
+    tmpdir = os.getenv("TMPDIR") or "/tmp"
+    # Velocity: expect jira["velocity"] as list of numbers or dicts with {"sprint","points"}
+    vel = jira.get("velocity")
+    if vel:
+        try:
+            import matplotlib.pyplot as plt  # type: ignore
+
+            labels = []
+            points = []
+            for i, v in enumerate(vel):
+                if isinstance(v, dict):
+                    labels.append(str(v.get("sprint", f"S{i+1}")))
+                    points.append(float(v.get("points", 0)))
+                else:
+                    labels.append(f"S{i+1}")
+                    points.append(float(v))
+            fig, ax = plt.subplots(figsize=(10, 4))
+            ax.bar(labels, points, color="#2a8fdd")
+            ax.set_title("Velocity (Story Points)")
+            ax.set_ylabel("SP")
+            fig.tight_layout()
+            path = os.path.join(tmpdir, f"velocity_{os.getpid()}.png")
+            fig.savefig(path)
+            plt.close(fig)
+            charts.append({"title": "Velocity", "path": path})
+        except Exception:
+            pass
+
+    # Burndown: expect jira["burndown"] as list of {"day","remaining"}
+    bd = jira.get("burndown")
+    if bd:
+        try:
+            import matplotlib.pyplot as plt  # type: ignore
+
+            days = [str(x.get("day", "")) for x in bd]
+            remaining = [float(x.get("remaining", 0)) for x in bd]
+            fig, ax = plt.subplots(figsize=(10, 4))
+            ax.plot(days, remaining, marker="o", color="#e67e22")
+            ax.set_title("Burndown (Remaining SP)")
+            ax.set_ylabel("SP")
+            ax.invert_yaxis()
+            fig.tight_layout()
+            path = os.path.join(tmpdir, f"burndown_{os.getpid()}.png")
+            fig.savefig(path)
+            plt.close(fig)
+            charts.append({"title": "Burndown", "path": path})
+        except Exception:
+            pass
+    return charts

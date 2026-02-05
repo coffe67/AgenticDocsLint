@@ -10,6 +10,7 @@ export default function App({ children }: { children: React.ReactNode }) {
         <nav>
           <Link className={loc.pathname.startsWith('/upload') ? 'active' : ''} to="/upload">Upload</Link>
           <Link className={loc.pathname.startsWith('/evaluate-url') ? 'active' : ''} to="/evaluate-url">From URL</Link>
+          <Link className={loc.pathname.startsWith('/sprint') ? 'active' : ''} to="/sprint">Sprint Report</Link>
           <a href="/HowItWorksStepByStep.md" target="_blank" rel="noreferrer">Docs</a>
         </nav>
       </header>
@@ -22,4 +23,3 @@ export default function App({ children }: { children: React.ReactNode }) {
     </div>
   )
 }
-

@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom'
 import App from './App'
 import UploadPage from './pages/Upload'
 import EvaluateUrlPage from './pages/EvaluateUrl'
+import SprintReportPage from './pages/SprintReport'
 import './styles.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -14,9 +15,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Route path="/" element={<Navigate to="/upload" replace />} />
           <Route path="/upload" element={<UploadPage />} />
           <Route path="/evaluate-url" element={<EvaluateUrlPage />} />
+          <Route path="/sprint" element={<SprintReportPage />} />
         </Routes>
       </App>
     </BrowserRouter>
   </React.StrictMode>
 )
-
