@@ -13,6 +13,7 @@ from fastapi.responses import JSONResponse
 
 from slideforge.config import load_config
 from slideforge.pipeline.orchestrator import run_pipeline
+from slideforge.agents.sprint_report import build_deck_from_jira, export_pptx, export_png_summary
 
 
 app = FastAPI(title="SlideForge API", version="0.1.0")
@@ -173,3 +174,49 @@ async def evaluate_url(
             results.append({"url": u, "error": str(e)})
 
     return JSONResponse({"results": results, "run_workspace": ws})
+
+
+@app.post("/generate-sprint-report")
+async def generate_sprint_report(
+    jira: Dict[str, Any],
+    formats: Optional[List[str]] = None,
+    template_config_path: Optional[str] = None,
+) -> JSONResponse:
+    """
+    Generate sprint report artifacts from a Jira JSON payload.
+    formats: subset of ["pptx","md","json","png"]. Default: ["pptx","json"].
+    """
+    ws = _prepare_workspace()
+    try:
+        formats = formats or ["pptx", "json"]
+        theme = load_config(template_config_path) if template_config_path else None
+        deck = build_deck_from_jira(jira, theme=theme)
+        out_dir = os.path.join(ws, "sprint")
+        os.makedirs(out_dir, exist_ok=True)
+        results: Dict[str, str] = {}
+        if "pptx" in formats:
+            pptx_path = os.path.join(out_dir, "sprint_report.pptx")
+            export_pptx(deck, pptx_path, theme=theme)
+            results["pptx"] = pptx_path
+        if "md" in formats:
+            from slideforge.agents.generator import export_deck_markdown
+
+            md_path = os.path.join(out_dir, "sprint_report.md")
+            export_deck_markdown(deck, md_path)
+            results["md"] = md_path
+        if "json" in formats:
+            import json
+
+            json_path = os.path.join(out_dir, "sprint_report.json")
+            with open(json_path, "w", encoding="utf-8") as f:
+                json.dump(deck.to_dict(), f, indent=2, ensure_ascii=False)
+            results["json"] = json_path
+        if "png" in formats:
+            png_path = os.path.join(out_dir, "sprint_report.png")
+            export_png_summary(jira, png_path, theme=theme)
+            results["png"] = png_path
+        return JSONResponse({"artifacts": results, "run_workspace": ws})
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

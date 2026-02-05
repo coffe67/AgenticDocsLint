@@ -13,7 +13,7 @@ VENV := venv
 PY := $(VENV)/bin/python
 PIP := $(VENV)/bin/pip
 
-.PHONY: help venv env-info shell install sample run run-relaxed run-paper2slides test clean clean-venv deps-api run-api deps-pptx deps-docx bootstrap-api start-api fe-install fe-dev fe-build docker-build docker-up docker-down
+.PHONY: help venv env-info shell install sample run run-relaxed run-paper2slides test clean clean-venv deps-api run-api deps-pptx deps-docx deps-images bootstrap-api start-api fe-install fe-dev fe-build docker-build docker-up docker-down
 
 help:
 	@echo "Targets:"
@@ -40,6 +40,7 @@ help:
 	@echo "  docker-up       Start full stack with docker-compose"
 	@echo "  docker-down     Stop stack and remove containers"
 	@echo "  deps-docx       Install DOCX parsing dependency (python-docx)"
+	@echo "  deps-images     Install Pillow for PNG exports"
 
 venv:
 	@test -d $(VENV) || python3 -m venv $(VENV)
@@ -89,6 +90,7 @@ run-api: deps-api
 bootstrap-api: install deps-api
 	@if [ -z "$(NO_PPTX)" ]; then $(MAKE) deps-pptx; else echo "Skipping pptx dep (NO_PPTX=1)"; fi
 	@if [ -z "$(NO_DOCX)" ]; then $(MAKE) deps-docx; else echo "Skipping docx dep (NO_DOCX=1)"; fi
+	@if [ -z "$(NO_IMAGES)" ]; then $(MAKE) deps-images; else echo "Skipping Pillow dep (NO_IMAGES=1)"; fi
 
 start-api:
 	@$(MAKE) bootstrap-api
@@ -105,6 +107,9 @@ fe-build:
 
 deps-docx: venv
 	@$(PY) -m pip install python-docx
+
+deps-images: venv
+	@$(PY) -m pip install pillow
 
 docker-build:
 	docker compose build

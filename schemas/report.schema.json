@@ -53,6 +53,35 @@
           "below_min_slides": { "type": "array", "items": { "type": "integer" } }
         }
       }
+    },
+    "keyword_summary": {
+      "type": ["object", "null"],
+      "properties": {
+        "required": {
+          "type": "object",
+          "properties": {
+            "required_keywords": { "type": "array", "items": { "type": "string" } },
+            "found": { "type": "array", "items": { "type": "string" } },
+            "missing": { "type": "array", "items": { "type": "string" } },
+            "coverage": { "type": "number", "minimum": 0, "maximum": 1 },
+            "occurrences": {
+              "type": "object",
+              "additionalProperties": { "type": "array", "items": { "type": "integer" } }
+            }
+          }
+        },
+        "forbidden": {
+          "type": "object",
+          "properties": {
+            "forbidden_keywords": { "type": "array", "items": { "type": "string" } },
+            "found": { "type": "array", "items": { "type": "string" } },
+            "occurrences": {
+              "type": "object",
+              "additionalProperties": { "type": "array", "items": { "type": "integer" } }
+            }
+          }
+        }
+      }
     }
   }
 }

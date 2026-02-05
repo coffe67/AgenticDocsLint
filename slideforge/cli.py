@@ -28,6 +28,12 @@ def main() -> None:
     sample_p = subparsers.add_parser("sample", help="Write sample deck and config")
     sample_p.add_argument("--out", default="examples", help="Directory to write samples")
 
+    sprint_p = subparsers.add_parser("generate-sprint", help="Generate sprint report slides from Jira JSON")
+    sprint_p.add_argument("--jira", required=True, help="Path to Jira JSON payload")
+    sprint_p.add_argument("--out", required=True, help="Output directory")
+    sprint_p.add_argument("--format", default="pptx", choices=["pptx", "md", "json", "png"], help="Output format")
+    sprint_p.add_argument("--template", default=None, help="Optional YAML/JSON theme/template config")
+
     args = parser.parse_args()
 
     if args.command == "run":
@@ -55,6 +61,8 @@ def main() -> None:
     elif args.command == "sample":
         write_samples(args.out)
         print(f"Samples written to {args.out}")
+    elif args.command == "generate-sprint":
+        run_generate_sprint(args)
 
 
 def write_samples(out_dir: str) -> None:
@@ -109,3 +117,37 @@ def write_samples(out_dir: str) -> None:
 
 if __name__ == "__main__":
     main()
+
+
+def run_generate_sprint(args) -> None:
+    import json
+    import os
+    from slideforge.agents.sprint_report import build_deck_from_jira, export_pptx, export_png_summary
+    from slideforge.config import load_config
+
+    with open(args.jira, "r", encoding="utf-8") as f:
+        jira = json.load(f)
+    theme = None
+    if args.template:
+        theme = load_config(args.template)
+    deck = build_deck_from_jira(jira, theme=theme)
+    os.makedirs(args.out, exist_ok=True)
+    if args.format == "pptx":
+        out_path = os.path.join(args.out, "sprint_report.pptx")
+        export_pptx(deck, out_path, theme=theme)
+        print(f"Wrote {out_path}")
+    elif args.format == "md":
+        out_path = os.path.join(args.out, "sprint_report.md")
+        from slideforge.agents.generator import export_deck_markdown
+
+        export_deck_markdown(deck, out_path)
+        print(f"Wrote {out_path}")
+    elif args.format == "json":
+        out_path = os.path.join(args.out, "sprint_report.json")
+        with open(out_path, "w", encoding="utf-8") as f:
+            json.dump(deck.to_dict(), f, indent=2)
+        print(f"Wrote {out_path}")
+    elif args.format == "png":
+        out_path = os.path.join(args.out, "sprint_report.png")
+        export_png_summary(jira, out_path, theme=theme)
+        print(f"Wrote {out_path}")

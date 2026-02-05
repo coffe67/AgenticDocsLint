@@ -32,8 +32,8 @@ def _fallback_builtin(input_path: str, config: Dict[str, Any], out_dir: str, aut
     deck = parse_deck(input_path, config)
     deck = normalize_deck(deck)
     deck = tag_sections(deck, config)
-    evaluations = check_keywords(deck, config)
-    decision = decide(evaluations, config)
+    evaluations, keyword_summary = check_keywords(deck, config)
+    decision = decide(evaluations, config, keyword_summary=keyword_summary)
 
     # Save parsed deck for debugging/inspection
     os.makedirs(out_dir, exist_ok=True)
@@ -68,6 +68,7 @@ def _fallback_builtin(input_path: str, config: Dict[str, Any], out_dir: str, aut
             "recommendations": decision.recommendations,
         },
         "section_summaries": section_summaries,
+        "keyword_summary": keyword_summary,
     }
     # Save via the same report utility by adapting to model
     from slideforge.models import ComplianceReport, SlideEvaluation, KeywordCheckResult, ComplianceDecision

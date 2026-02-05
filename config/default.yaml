@@ -16,6 +16,14 @@ required_keywords:
   Results: [accuracy, evaluation]
   Conclusion: [summary, next steps]
 
+# Global keyword policy (preferred):
+# When present, the pipeline applies these across the entire document (not per section).
+# If empty or omitted, it will fall back to section-based checks above.
+required_keywords_global: [goal, motivation, data, model, training, accuracy, evaluation, summary, next steps]
+
+# Keywords that should not appear in the document; presence triggers update recommendations.
+forbidden_keywords: []
+
 thresholds:
   coverage_pass: 0.8
   coverage_needs_update: 0.5

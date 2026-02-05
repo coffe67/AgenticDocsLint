@@ -1,0 +1,28 @@
+# Example config demonstrating section/keyword keys with spaces
+
+section_rules:
+  "Expert Package":
+    keywords: [expert, package, bundle]
+  "Control System":
+    keywords: [control system, plc, scada, automation]
+  Introduction:
+    keywords: [intro, overview]
+
+required_keywords:
+  "Expert Package": [pricing, scope]
+  "Control System": [architecture, safety]
+  Introduction: [goal]
+
+thresholds:
+  coverage_pass: 0.7
+  coverage_needs_update: 0.4
+
+strict:
+  # Keep this off so adding new sections with spaces won't immediately FAIL
+  require_all_sections: false
+  min_per_section_coverage: 0.5
+  min_slide_coverage: 0.3
+  min_section_confidence: 0.3
+  disallow_unassigned: false
+  fail_on_section_avg_below: false
+

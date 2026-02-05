@@ -29,8 +29,8 @@ def run_pipeline(input_path: str, config: Dict[str, Any], out_dir: str, auto_fix
         json.dump(deck.to_dict(), f, indent=2, ensure_ascii=False)
     deck = normalize_deck(deck)
     deck = tag_sections(deck, config)
-    evaluations = check_keywords(deck, config)
-    decision = decide(evaluations, config)
+    evaluations, keyword_summary = check_keywords(deck, config)
+    decision = decide(evaluations, config, keyword_summary=keyword_summary)
 
     # Get section summaries from decision if available
     section_summaries = getattr(decision, "_section_summaries", None)
@@ -40,6 +40,7 @@ def run_pipeline(input_path: str, config: Dict[str, Any], out_dir: str, auto_fix
         per_slide=evaluations,
         overall=decision,
         section_summaries=section_summaries,
+        keyword_summary=keyword_summary,
     )
     save_report(report, out_dir)
 

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import List, Dict, Any, Tuple, DefaultDict
+from typing import List, Dict, Any, Tuple, DefaultDict, Optional
 from collections import defaultdict
 
 from slideforge.models import SlideEvaluation, ComplianceDecision
 
 
-def decide(evaluations: List[SlideEvaluation], config: Dict[str, Any]) -> ComplianceDecision:
+def decide(evaluations: List[SlideEvaluation], config: Dict[str, Any], keyword_summary: Optional[Dict[str, Any]] = None) -> ComplianceDecision:
     thresholds = config.get("thresholds", {})
     coverage_pass = float(thresholds.get("coverage_pass", 0.8))
     coverage_needs = float(thresholds.get("coverage_needs_update", 0.5))
@@ -18,11 +18,16 @@ def decide(evaluations: List[SlideEvaluation], config: Dict[str, Any]) -> Compli
     require_all_sections = bool(strict.get("require_all_sections", True))
     fail_on_section_avg_below = bool(strict.get("fail_on_section_avg_below", True))
 
-    coverages = []
-    for e in evaluations:
-        if e.keyword_result is not None:
-            coverages.append(e.keyword_result.coverage)
-    overall_cov = sum(coverages) / len(coverages) if coverages else 1.0
+    # Prefer global required coverage if provided
+    overall_cov = 1.0
+    if keyword_summary and keyword_summary.get("required"):
+        overall_cov = float(keyword_summary["required"].get("coverage", 1.0))
+    else:
+        coverages = []
+        for e in evaluations:
+            if e.keyword_result is not None:
+                coverages.append(e.keyword_result.coverage)
+        overall_cov = sum(coverages) / len(coverages) if coverages else 1.0
 
     # Collect reasons and recommendations (why)
     reasons: List[str] = []
@@ -89,6 +94,20 @@ def decide(evaluations: List[SlideEvaluation], config: Dict[str, Any]) -> Compli
     if disallow_unassigned and unassigned_slides:
         reasons.append(f"Unassigned or low-confidence slides: {', '.join(map(str, unassigned_slides[:20]))}")
 
+    # Global required keyword rationale
+    if keyword_summary and keyword_summary.get("required"):
+        req = keyword_summary["required"]
+        missing = req.get("missing") or []
+        if missing:
+            reasons.append(f"Missing required keywords (global): {', '.join(missing[:10])}")
+
+    # Forbidden keyword rationale
+    if keyword_summary and keyword_summary.get("forbidden"):
+        forb = keyword_summary["forbidden"]
+        found_f = forb.get("found") or []
+        if found_f:
+            reasons.append(f"Forbidden keywords present: {', '.join(found_f[:10])}")
+
     # Coverage-based rationale
     if overall_cov < coverage_pass:
         reasons.append(
@@ -117,6 +136,8 @@ def decide(evaluations: List[SlideEvaluation], config: Dict[str, Any]) -> Compli
     elif (
         slides_with_missing or missing_sections or overall_cov < coverage_pass or unassigned_slides
         or any(s.get("below_min_slides") for s in section_summaries)
+        or (keyword_summary and keyword_summary.get("forbidden") and (keyword_summary["forbidden"].get("found") or []))
+        or (keyword_summary and keyword_summary.get("required") and (keyword_summary["required"].get("missing") or []))
     ):
         status = "NEEDS_UPDATE"
     else:

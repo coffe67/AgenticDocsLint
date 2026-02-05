@@ -70,6 +70,7 @@ class ComplianceReport:
     per_slide: List[SlideEvaluation]
     overall: ComplianceDecision
     section_summaries: Optional[List[Dict[str, Any]]] = None
+    keyword_summary: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -85,4 +86,5 @@ class ComplianceReport:
             ],
             "overall": asdict(self.overall),
             "section_summaries": self.section_summaries,
+            "keyword_summary": self.keyword_summary,
         }

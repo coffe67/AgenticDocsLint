@@ -28,6 +28,20 @@ def format_human(report: ComplianceReport) -> str:
         for r in report.overall.reasons:
             lines.append(f"- {r}")
         lines.append("")
+    if report.keyword_summary:
+        req = report.keyword_summary.get("required") if isinstance(report.keyword_summary, dict) else None
+        forb = report.keyword_summary.get("forbidden") if isinstance(report.keyword_summary, dict) else None
+        if req:
+            lines.append("Global required keywords:")
+            cov = req.get("coverage", 1.0)
+            miss = ", ".join(req.get("missing", [])) or "-"
+            lines.append(f"- coverage={cov:.2f} missing=[{miss}]")
+            lines.append("")
+        if forb:
+            lines.append("Forbidden keywords:")
+            foundf = ", ".join(forb.get("found", [])) or "-"
+            lines.append(f"- found=[{foundf}]")
+            lines.append("")
     if report.section_summaries:
         lines.append("Section summaries:")
         for s in report.section_summaries:

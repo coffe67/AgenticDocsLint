@@ -115,6 +115,21 @@ Use YAML config files to tune rules. Defaults live in `config/default.yaml`. A r
   - disallow_unassigned: flag unassigned/low-confidence slides
   - fail_on_section_avg_below: when true, section-average shortfalls cause FAIL; otherwise NEEDS_UPDATE
 
+Keys with spaces
+----------------
+
+- Section and keyword map keys may contain spaces, e.g., `"Expert Package"` or `"Control System"`.
+- Use quotes in YAML when writing keys with spaces.
+- See `config/with_spaces.yaml` for a working example. The pipeline’s tagger and checker fully support spaced keys.
+
+Global keyword policy
+---------------------
+
+- Prefer a document-wide policy:
+  - `required_keywords_global`: list applied across the entire document (coverage computed globally)
+  - `forbidden_keywords`: list of terms that should NOT appear anywhere; presence triggers updates
+- If `required_keywords_global` is present, the pipeline ignores per-section `required_keywords` for coverage scoring (it still computes section summaries).
+
 CLI usage
 ---------
 
@@ -168,6 +183,7 @@ More docs
 
 - Deep dive with sequence diagram and Julep mapping: `HowItWorksStepByStep.md`
 - Troubleshooting & tuning tips: `docs/TROUBLESHOOTING.md`
+- Sprint report generation from Jira JSON: `docs/SPRINT_REPORTS.md`
 
 Frontend (React)
 ----------------

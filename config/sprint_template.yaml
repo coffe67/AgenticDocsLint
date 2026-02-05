@@ -1,0 +1,12 @@
+# Simple sprint report theme/template
+
+title_font:
+  size: 38
+body_font:
+  size: 20
+
+colors:
+  bg: [240, 242, 247]
+  fg: [20, 22, 30]
+  accent: [42, 143, 221]
+

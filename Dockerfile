@@ -20,9 +20,8 @@ COPY docs ./docs
 # Install project and API deps
 RUN pip install --upgrade pip setuptools wheel \
     && pip install . \
-    && pip install fastapi uvicorn[standard] requests beautifulsoup4 python-multipart python-pptx
+    && pip install fastapi uvicorn[standard] requests beautifulsoup4 python-multipart python-pptx python-docx pillow
 
 EXPOSE 8000
 
 CMD ["uvicorn", "slideforge.api:app", "--host", "0.0.0.0", "--port", "8000"]
-
