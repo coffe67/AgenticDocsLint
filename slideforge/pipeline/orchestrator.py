@@ -23,6 +23,10 @@ def run_pipeline(input_path: str, config: Dict[str, Any], out_dir: str, auto_fix
     os.makedirs(out_dir, exist_ok=True)
 
     deck = parse_deck(input_path, config)
+    # Save parsed deck for debugging/inspection
+    parsed_deck_path = os.path.join(out_dir, "parsed_deck.json")
+    with open(parsed_deck_path, "w", encoding="utf-8") as f:
+        json.dump(deck.to_dict(), f, indent=2, ensure_ascii=False)
     deck = normalize_deck(deck)
     deck = tag_sections(deck, config)
     evaluations = check_keywords(deck, config)
@@ -53,5 +57,6 @@ def run_pipeline(input_path: str, config: Dict[str, Any], out_dir: str, auto_fix
     return {
         "report_json": os.path.join(out_dir, "compliance_report.json"),
         "report_txt": os.path.join(out_dir, "compliance_report.txt"),
+        "parsed_deck_json": parsed_deck_path,
         **generated_paths,
     }

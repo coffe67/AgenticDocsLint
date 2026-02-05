@@ -6,7 +6,7 @@ export default function EvaluateUrlPage() {
   const [url, setUrl] = useState('')
   const [autoFix, setAutoFix] = useState(true)
   const [configPath, setConfigPath] = useState('config/default.yaml')
-  const [allowedExts, setAllowedExts] = useState('pptx,md,txt,json')
+  const [allowedExts, setAllowedExts] = useState('pptx,docx,md,txt,json')
   const [crawl, setCrawl] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
@@ -65,4 +65,3 @@ export default function EvaluateUrlPage() {
     </div>
   )
 }
-

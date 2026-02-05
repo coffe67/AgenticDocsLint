@@ -27,6 +27,8 @@ def parse_deck(input_path: str, config: Optional[Dict[str, Any]] = None) -> Deck
     # For now, raise a friendly message.
     if ext == ".pptx":
         return _parse_pptx(input_path)
+    if ext == ".docx":
+        return _parse_docx(input_path)
     if ext == ".pdf":
         raise NotImplementedError(
             "PDF parsing not implemented in builtin path. Use Paper2Slides backend or provide JSON/MD/TXT."
@@ -168,4 +170,64 @@ def _parse_pptx(path: str) -> Deck:
         slides.append(Slide(index=idx, title=title, bullets=bullets))
 
     meta: Dict[str, Any] = {"source": os.path.basename(path), "format": "pptx"}
+    return Deck(meta=meta, slides=slides)
+
+
+def _parse_docx(path: str) -> Deck:
+    try:
+        import docx  # type: ignore
+    except Exception as e:
+        raise RuntimeError(
+            "DOCX parsing requires the 'python-docx' package. Install it, e.g.:\n"
+            "  pip install python-docx"
+        ) from e
+
+    document = docx.Document(path)
+    slides: list[Slide] = []
+    current_title = "Untitled"
+    current_bullets: list[str] = []
+    idx = 0
+
+    def flush():
+        nonlocal idx, current_title, current_bullets
+        if (current_title and current_title.strip()) or current_bullets:
+            slides.append(Slide(index=idx, title=current_title.strip() or f"Slide {idx}", bullets=current_bullets[:]))
+            idx += 1
+        current_title = "Untitled"
+        current_bullets = []
+
+    def is_heading(paragraph) -> bool:
+        try:
+            name = paragraph.style.name or ""
+            return name.lower().startswith("heading 1") or name.lower() == "title"
+        except Exception:
+            return False
+
+    for p in document.paragraphs:
+        text = (p.text or "").strip()
+        if not text:
+            continue
+        if is_heading(p):
+            # Start a new slide
+            flush()
+            current_title = text
+        else:
+            current_bullets.append(text)
+
+    flush()
+
+    # Tables (optional): append cell text as bullets under the last slide
+    for t in document.tables:
+        for row in t.rows:
+            for cell in row.cells:
+                cell_text = (cell.text or "").strip()
+                if not cell_text:
+                    continue
+                if not slides:
+                    slides.append(Slide(index=0, title="Untitled", bullets=[cell_text]))
+                    idx = 1
+                else:
+                    slides[-1].bullets.append(cell_text)
+
+    meta: Dict[str, Any] = {"source": os.path.basename(path), "format": "docx"}
     return Deck(meta=meta, slides=slides)

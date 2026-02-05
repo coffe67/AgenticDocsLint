@@ -35,6 +35,12 @@ def _fallback_builtin(input_path: str, config: Dict[str, Any], out_dir: str, aut
     evaluations = check_keywords(deck, config)
     decision = decide(evaluations, config)
 
+    # Save parsed deck for debugging/inspection
+    os.makedirs(out_dir, exist_ok=True)
+    parsed_deck_path = os.path.join(out_dir, "parsed_deck.json")
+    with open(parsed_deck_path, "w", encoding="utf-8") as f:
+        json.dump(deck.to_dict(), f, indent=2, ensure_ascii=False)
+
     report_meta = {"source": deck.meta.get("source"), "total_slides": len(deck.slides), "orchestrator": "julep-fallback"}
     section_summaries = getattr(decision, "_section_summaries", None)
     report = {
@@ -108,6 +114,6 @@ def _fallback_builtin(input_path: str, config: Dict[str, Any], out_dir: str, aut
     return {
         "report_json": os.path.join(out_dir, "compliance_report.json"),
         "report_txt": os.path.join(out_dir, "compliance_report.txt"),
+        "parsed_deck_json": parsed_deck_path,
         **generated_paths,
     }
-

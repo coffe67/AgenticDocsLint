@@ -93,6 +93,9 @@ This document explains the repository structure, the execution flow, the core da
   - `.pptx` → uses `python-pptx` to extract:
     - Title: first TITLE placeholder text (if present), else “Untitled”
     - Bullets: all text from non-title shapes’ text frames
+  - `.docx` → uses `python-docx` to extract:
+    - Title: Heading 1 or Title paragraphs
+    - Bullets: other paragraphs under the last seen heading; table cells appended to the last slide
 - Paper2Slides CLI backend
   - Configure in YAML: `parser.backend: paper2slides`
   - Command template supports placeholders:

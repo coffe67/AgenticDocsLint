@@ -31,6 +31,15 @@ def _infer_section(title: str, text: str, rules: Dict[str, Any]) -> Tuple[str | 
         if score > best_score:
             best_score = score
             best_section = sec
-    conf = min(1.0, best_score / 5.0) if best_score > 0 else 0.0
-    return best_section, conf
+    if best_score > 0:
+        conf = min(1.0, best_score / 5.0)
+        return best_section, conf
 
+    # Fallback: try matching section names directly in the title (case-insensitive)
+    title_l = title.lower()
+    for sec in rules.keys():
+        sec_l = sec.lower()
+        if sec_l == title_l or sec_l in title_l or title_l in sec_l:
+            return sec, 0.6
+
+    return None, 0.0

@@ -134,6 +134,14 @@ PPTX ingestion (builtin)
   - `make run INPUT=/absolute/path/to/deck.pptx AUTO_FIX=1`
 - The parser extracts slide titles and text boxes as bullets; the pipeline then tags sections, checks keywords, and decides PASS/NEEDS_UPDATE/FAIL.
 
+DOCX ingestion (builtin)
+------------------------
+
+- Install the optional dependency once: `make deps-docx` (installs `python-docx` into the local venv).
+- Then run with a Word document:
+  - `make run INPUT=/absolute/path/to/deck.docx AUTO_FIX=1`
+- Parser behavior: uses Heading 1/Title paragraphs as slide titles; treats other paragraphs as bullets; table cell text is appended to the last slide.
+
 API (FastAPI)
 -------------
 
@@ -159,6 +167,7 @@ More docs
 ---------
 
 - Deep dive with sequence diagram and Julep mapping: `HowItWorksStepByStep.md`
+- Troubleshooting & tuning tips: `docs/TROUBLESHOOTING.md`
 
 Frontend (React)
 ----------------
