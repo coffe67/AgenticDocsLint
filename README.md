@@ -184,6 +184,7 @@ More docs
 - Deep dive with sequence diagram and Julep mapping: `HowItWorksStepByStep.md`
 - Troubleshooting & tuning tips: `docs/TROUBLESHOOTING.md`
 - Sprint report generation from Jira JSON: `docs/SPRINT_REPORTS.md`
+- LLM integration (draft usage): `docs/LLM.md`
 
 Frontend (React)
 ----------------

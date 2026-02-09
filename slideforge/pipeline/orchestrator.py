@@ -8,6 +8,7 @@ from slideforge.models import ComplianceReport
 from slideforge.parsers.paper2slides_adapter import parse_deck
 from slideforge.agents.normalizer import normalize_deck
 from slideforge.agents.section_tagger import tag_sections
+from slideforge.agents.tagger_llm import tag_sections_llm
 from slideforge.agents.keyword_checker import check_keywords
 from slideforge.agents.compliance_decider import decide
 from slideforge.agents.report import save_report
@@ -28,7 +29,11 @@ def run_pipeline(input_path: str, config: Dict[str, Any], out_dir: str, auto_fix
     with open(parsed_deck_path, "w", encoding="utf-8") as f:
         json.dump(deck.to_dict(), f, indent=2, ensure_ascii=False)
     deck = normalize_deck(deck)
-    deck = tag_sections(deck, config)
+    tagger_mode = ((config.get("tagger") or {}).get("mode") or "heuristic").lower()
+    if tagger_mode == "llm":
+        deck = tag_sections_llm(deck, config)
+    else:
+        deck = tag_sections(deck, config)
     evaluations, keyword_summary = check_keywords(deck, config)
     decision = decide(evaluations, config, keyword_summary=keyword_summary)
 

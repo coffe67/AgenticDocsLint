@@ -53,3 +53,13 @@ parser:
     output: stdout  # or a file path template like {tmp}/deck.json
 
 orchestrator: builtin  # options: builtin, julep
+
+# LLM configuration (optional)
+tagger:
+  mode: heuristic  # options: heuristic, llm
+llm:
+  provider: ""      # e.g., openai
+  model: ""         # e.g., gpt-4o-mini
+  # api_key: ""     # or use env var OPENAI_API_KEY / LLM_API_KEY
+  timeout_s: 30
+  max_tokens: 256
