@@ -7,6 +7,7 @@ export default function SprintReportPage() {
   const [jiraText, setJiraText] = useState('')
   const [templatePath, setTemplatePath] = useState('config/sprint_template.yaml')
   const [formats, setFormats] = useState<string[]>(['pptx','json'])
+  const [mode, setMode] = useState<'heuristic'|'llm'>('heuristic')
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -24,6 +25,7 @@ export default function SprintReportPage() {
         jira: JSON.parse(jiraText),
         formats,
         template_config_path: templatePath || undefined,
+        generator_mode: mode,
       }
       const res = await fetch(`${API_BASE}/generate-sprint-report`, {
         method: 'POST',
@@ -60,6 +62,15 @@ export default function SprintReportPage() {
             </label>
           ))}
         </div>
+        <div className="row">
+          <label>Mode</label>
+          <label style={{marginRight: 12}}>
+            <input type="radio" name="mode" checked={mode==='heuristic'} onChange={()=>setMode('heuristic')} /> heuristic
+          </label>
+          <label>
+            <input type="radio" name="mode" checked={mode==='llm'} onChange={()=>setMode('llm')} /> llm
+          </label>
+        </div>
         <button disabled={!jiraText || loading} type="submit">{loading ? 'Generating...' : 'Generate'}</button>
       </form>
       {error && <p className="error">{error}</p>}
@@ -76,4 +87,3 @@ export default function SprintReportPage() {
     </div>
   )
 }
-

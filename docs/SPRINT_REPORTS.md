@@ -25,13 +25,13 @@ API
 ---
 
 - POST `/generate-sprint-report`
-  - Body JSON: `{ "jira": {…}, "formats": ["pptx","json","png"], "template_config_path": "config/sprint_template.yaml" }`
+  - Body JSON: `{ "jira": {…}, "formats": ["pptx","json","png"], "template_config_path": "config/sprint_template.yaml", "generator_mode": "heuristic|llm" }`
   - Returns: `{ artifacts: { pptx?, md?, json?, png? }, run_workspace }`
 
 CLI
 ---
 
-- `slideforge generate-sprint --jira path/to/jira.json --out build_sprint --format pptx --template config/sprint_template.yaml`
+- `slideforge generate-sprint --jira path/to/jira.json --out build_sprint --format pptx --template config/sprint_template.yaml [--mode llm]`
 
 Templating
 ----------
@@ -39,10 +39,15 @@ Templating
 - Minimal theme in `config/sprint_template.yaml` (fonts, colors).
 - Extendable: add your brand assets and more slide types (velocity, burndown images) by expanding `slideforge/agents/sprint_report.py`.
 
+LLM mode
+--------
+
+- Enable mode per request (`generator_mode: llm`) or CLI (`--mode llm`).
+- Provide LLM config under `llm.*` (see `docs/LLM.md`). If not configured or unavailable, the system falls back to heuristic slides.
+
 Notes
 -----
 - Install deps for outputs you need:
   - `make deps-pptx` for PPTX
   - `make deps-images` for PNG
 - Docker build includes these by default.
-

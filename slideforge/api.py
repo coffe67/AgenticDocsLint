@@ -181,6 +181,7 @@ async def generate_sprint_report(
     jira: Dict[str, Any],
     formats: Optional[List[str]] = None,
     template_config_path: Optional[str] = None,
+    generator_mode: str = "heuristic",
 ) -> JSONResponse:
     """
     Generate sprint report artifacts from a Jira JSON payload.
@@ -190,13 +191,17 @@ async def generate_sprint_report(
     try:
         formats = formats or ["pptx", "json"]
         theme = load_config(template_config_path) if template_config_path else None
-        deck = build_deck_from_jira(jira, theme=theme)
+        if (generator_mode or "heuristic").lower() == "llm":
+            from slideforge.agents.sprint_report_llm import build_deck_from_jira_llm
+            deck = build_deck_from_jira_llm(jira, config=theme)
+        else:
+            deck = build_deck_from_jira(jira, theme=theme)
         out_dir = os.path.join(ws, "sprint")
         os.makedirs(out_dir, exist_ok=True)
         results: Dict[str, str] = {}
         if "pptx" in formats:
             pptx_path = os.path.join(out_dir, "sprint_report.pptx")
-            export_pptx(deck, pptx_path, theme=theme, jira=jira)
+            export_pptx(deck, pptx_path, theme=theme, jira=(jira if generator_mode == 'llm' else None))
             results["pptx"] = pptx_path
         if "md" in formats:
             from slideforge.agents.generator import export_deck_markdown

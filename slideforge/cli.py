@@ -33,6 +33,7 @@ def main() -> None:
     sprint_p.add_argument("--out", required=True, help="Output directory")
     sprint_p.add_argument("--format", default="pptx", choices=["pptx", "md", "json", "png"], help="Output format")
     sprint_p.add_argument("--template", default=None, help="Optional YAML/JSON theme/template config")
+    sprint_p.add_argument("--mode", default="heuristic", choices=["heuristic","llm"], help="Content generator mode")
 
     args = parser.parse_args()
 
@@ -123,6 +124,7 @@ def run_generate_sprint(args) -> None:
     import json
     import os
     from slideforge.agents.sprint_report import build_deck_from_jira, export_pptx, export_png_summary
+    from slideforge.agents.sprint_report_llm import build_deck_from_jira_llm
     from slideforge.config import load_config
 
     with open(args.jira, "r", encoding="utf-8") as f:
@@ -130,11 +132,15 @@ def run_generate_sprint(args) -> None:
     theme = None
     if args.template:
         theme = load_config(args.template)
-    deck = build_deck_from_jira(jira, theme=theme)
+    if getattr(args, 'mode', 'heuristic') == 'llm':
+        # Use theme as a general config bag so llm.* can live there if desired
+        deck = build_deck_from_jira_llm(jira, config=theme)
+    else:
+        deck = build_deck_from_jira(jira, theme=theme)
     os.makedirs(args.out, exist_ok=True)
     if args.format == "pptx":
         out_path = os.path.join(args.out, "sprint_report.pptx")
-        export_pptx(deck, out_path, theme=theme)
+        export_pptx(deck, out_path, theme=theme, jira=jira if args.mode == 'llm' else None)
         print(f"Wrote {out_path}")
     elif args.format == "md":
         out_path = os.path.join(args.out, "sprint_report.md")
