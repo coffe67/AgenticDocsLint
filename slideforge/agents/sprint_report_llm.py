@@ -64,7 +64,8 @@ def build_deck_from_jira_llm(jira: Dict[str, Any], config: Optional[Dict[str, An
     )
 
     try:
-        data = client.call_json(user, system=system)
+        ck = client._short_hash(f"sprint:{llm_cfg.model}:{name}:{json.dumps(summary, sort_keys=True)}:{json.dumps(top_min, sort_keys=True)}")
+        data = client.call_json(user, system=system, cache_key=ck, log_label="sprint_report")
         slides_json = data.get("slides") if isinstance(data, dict) else None
         slides_out: List[Slide] = []
         if isinstance(slides_json, list):
@@ -81,4 +82,3 @@ def build_deck_from_jira_llm(jira: Dict[str, Any], config: Optional[Dict[str, An
         return Deck(meta=deck_meta, slides=slides_out)
     except (LLMNotConfigured, Exception):
         return build_heuristic(jira, theme=cfg)
-

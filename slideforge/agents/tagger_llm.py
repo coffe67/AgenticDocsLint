@@ -25,7 +25,8 @@ def tag_sections_llm(deck: Deck, config: Dict[str, Any]) -> Deck:
     for s in deck.slides:
         prompt = build_prompt_for_slide(s.title, s.bullets, s.notes, allowed)
         try:
-            data = client.call_json(prompt, system=sys)
+            ck = client._short_hash(f"tag:{llm_cfg.model}:{s.index}:{s.title}|{','.join(s.bullets)}|{','.join(allowed)}")
+            data = client.call_json(prompt, system=sys, cache_key=ck, log_label=f"tag_slide_{s.index}")
             section = data.get("section")
             conf = float(data.get("confidence", 0)) if data.get("confidence") is not None else 0.0
             if isinstance(section, str) and section in allowed:
@@ -52,4 +53,3 @@ def build_prompt_for_slide(title: str, bullets: List[str], notes: str | None, al
         f"Title: {title}\n"
         f"Bullets:\n{body}{notes_s}\n"
     )
-

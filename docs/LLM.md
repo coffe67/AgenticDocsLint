@@ -44,12 +44,13 @@ Provider notes
 Observability & cost
 --------------------
 
-- For audit, you can add a simple on-disk log of prompts/responses in `build/llm_logs/`. Keep redaction in mind if your content contains PII.
-- Consider a cache keyed by slide hash to avoid re-calling the model for unchanged slides.
+- Prompt/response logging: enable via `llm.enable_logs: true`. Logs are written to `build/llm_logs/` by default (override with `llm.log_dir`).
+- Caching: enable via `llm.enable_cache: true` (default). Cache files are stored in `build/llm_cache/` (override with `llm.cache_dir`).
+- Both can also be controlled by env vars `LLM_LOG_DIR` / `LLM_CACHE_DIR`.
+- Keep redaction in mind if your content contains PII.
 
 Next: LLM Generator (optional)
 ------------------------------
 
 - Swap the heuristic placeholder generator with an LLM that produces a few concise bullets covering missing keywords.
 - Similar guardrails apply (JSON responses, length/style constraints).
-
